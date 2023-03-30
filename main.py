@@ -1,16 +1,16 @@
 import pygame
+import pygame_gui
 
 
 #Init stuffs
-pygame.mixer.init()
 pygame.font.init()
 pygame.init()
 pygame.display.set_caption("3D RENDERERER OH YEAH!")
 pack = "Default"
 
-WIDTH = 900
-HEIGHT = 700
-SCREEN = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
+WIDTH, HEIGHT = pygame.display.Info().current_w, pygame.display.Info().current_h
+SCREEN = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
+MANAGER = pygame_gui.UIManager((WIDTH, HEIGHT))
 
 #Colours
 WHITE = (255, 255, 255)
@@ -56,6 +56,7 @@ def handle_camera_move(keys_pressed, speed):
 def draw_screen(test_box):
     SCREEN.fill(WHITE)
     test_box.draw()
+    MANAGER.draw_ui(SCREEN)
     pygame.display.update()
 
 
@@ -63,16 +64,23 @@ def main():
     global camera_pos
     clock = pygame.time.Clock()
 
+    hello_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((350, 275), (100, 50)),
+                                             text='Say Hello',
+                                             manager=MANAGER)
     test_box = box((100, 100), BLACK, (500, 500))
     camera_pos = [0, 0, 0]
     camera_speed = 5
     run = True
     while run:
-        clock.tick(60)
+        time_delta = clock.tick(60)/1000.0
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
                 pygame.display.quit()
+            
+            MANAGER.process_events(event)
+        
+        MANAGER.update(time_delta)
 
         keys_pressed = pygame.key.get_pressed()
         handle_camera_move(keys_pressed, camera_speed)
